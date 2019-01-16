@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'home',
     'search',
     "tournaments",
+    "event_site",
 
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
@@ -39,6 +40,10 @@ INSTALLED_APPS = [
     'wagtail.search',
     'wagtail.admin',
     'wagtail.core',
+
+    # added
+
+    # end added
 
     'modelcluster',
     'taggit',

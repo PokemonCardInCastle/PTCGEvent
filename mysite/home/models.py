@@ -1,7 +1,16 @@
 from django.db import models
 
 from wagtail.core.models import Page
+from wagtail.core.fields import RichTextField, StreamField
+from wagtail.core import blocks
+from wagtail.admin.edit_handlers import FieldPanel
 
 
 class HomePage(Page):
-    pass
+    body = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('body', classname="full"),
+    ]
+
+
