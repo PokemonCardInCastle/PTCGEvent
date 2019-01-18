@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-blogpage{% endblock %}
+
+{% block content %}
+    <h1>{{ page.title }}</h1>
+    <p class="meta">{{ page.dateTime }}</p>
+
+    <div class="intro">{{ page.intro }}</div>
+    {{ page.body|richtext }}
+
+    <p>
+    <div>
+    シリーズ情報
+</div>
+    {% if page.parent_series %}
+        <div>
+            親シリーズ: {{ page.parent_series }}
+        </div>
+    {% endif %}
+    name: {{ page.title }}
+
+    <div>Owner:
+        <div>username = {{page.owner.username}}, id = {{page.owner.id}}</div>
+    {% for user in page.admin_user.all %}
+        {% if user != page.owner %}
+            <div>username = {{user.username}}, id = {{user.id}}</div>
+            {% endif %}
+    {% endfor %}
+     </div>
+
+</p>
+
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    parent series
+    {% else %}
+    Home
+    {% endif %}</a></p>
+
+{% endblock %}

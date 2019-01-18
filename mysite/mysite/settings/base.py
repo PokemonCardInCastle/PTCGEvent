@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'wagtail.core',
 
     # added
-
+    "widget_tweaks",
     # end added
 
     'modelcluster',
@@ -71,6 +71,16 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'mysite.urls'
 
+
+class InvalidString(str):
+    # "%s is ok" % undefined  :文字列フォーマット操作に際して__mod__が呼ばれる
+    def __mod__(self, other):
+        msg = "Undefined variable or unknown value for: %s" % other
+        # 開発環境の場合は例外
+        from django.template.base import TemplateSyntaxError
+        raise TemplateSyntaxError(msg)
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -85,6 +95,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # 'string_if_invalid': InvalidString("%s"),  # ここに設定
         },
     },
 ]
@@ -125,9 +136,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ja'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
 

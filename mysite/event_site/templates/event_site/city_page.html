@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-regionpage{% endblock %}
+
+{% block content %}
+    <h1>{{ page.title }}</h1>
+
+    <div class="intro">{{ page.intro }}</div>
+    <div>{{ page.body }}</div>
+    <div>{{ page.is_active }}</div>
+    <div>仮実装</div>
+
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    parent series
+    {% else %}
+    Home
+    {% endif %}</a></p>
+
+{% endblock %}

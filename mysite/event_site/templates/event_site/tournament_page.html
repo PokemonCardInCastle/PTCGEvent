@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+{% block body_class %}template-blogpage{% endblock %}
+{% block content %}
+    <h1>title :
+        {{ page.title }}</h1>
+    <div class="intro">intro :
+        {{ page.intro }}</div>
+    body :
+    {{ page.body|richtext }}<br/>
+
+    {% if user == page.owner or user in page.admin_user %}
+        {% if page.can_start_next_round %}
+            マッチング可能：
+            <button class="btn btn-primary">マッチングボタン(未実装)</button>
+        {% else %}
+            マッチング不可：
+            <button class="btn btn-secondary disabled">マッチングボタン(未実装)</button>
+        {% endif %}
+
+        <p>
+        {% if user in page.user_queryset %}
+        参加者用マッチ情報<br>
+            {% if page.round %}
+                {% for round in page.round_set %}
+                    {% for match in round.match_set %}
+                        {% if match.player1.user == user or user == match.player2.user %}
+                            match.url
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                まだマッチングされてないよ。マッチングされたらここに表示されます。
+            {% endif %}
+        {% else %}
+        参加者じゃないぴよ...（ここは参加者用マッチ情報表示欄です）
+        {% endif %}
+</p>
+    {% endif %}
+    <table>
+        <tr>
+            <td>start_datetime</td>
+            <td>
+                {{ page.start_datetime }}</td>
+        </tr>
+        <tr>
+            <td>admin_user</td>
+            <td>
+                {{ page.admin_user }}</td>
+        </tr>
+        <tr>
+            <td>parent_series</td>
+            <td>
+                {{ page.parent_series }}</td>
+        </tr>
+        <tr>
+            <td>venue_room</td>
+            <td>
+                {{ page.venue_room }}</td>
+        </tr>
+        <tr>
+            <td>max_player_count</td>
+            <td>
+                {{ page.max_player_count }}</td>
+        </tr>
+        <tr>
+            <td>top_cut_count</td>
+            <td>
+                {{ page.top_cut_count }}</td>
+        </tr>
+        <tr>
+            <td>default_time_limit_in_sec</td>
+            <td>
+                {{ page.default_time_limit_in_sec }}</td>
+        </tr>
+        <tr>
+            <td>max_round</td>
+            <td>
+                {{ page.max_round }}</td>
+        </tr>
+        <tr>
+            <td>admin_user</td>
+            <td>
+                {{ page.admin_user }}</td>
+        </tr>
+        <tr>
+            <td>max_win_count_in_match</td>
+            <td>
+                {{ page.max_win_count_in_match }}</td>
+        </tr>
+        <tr>
+            <td>bye_win_count_in_match</td>
+            <td>
+                {{ page.bye_win_count_in_match }}</td>
+        </tr>
+    </table>
+    <p>
+        <div>
+            シリーズ情報
+        </div>
+        name: title :
+        {{ page.title }}
+        <div>Owner:
+            <div>username =
+                {{page.owner.username}}, id =
+                {{page.owner.id}}</div>
+            {% for user in page.admin_user.all %}
+                {% if user != page.owner %}
+                    <div>username =
+                        {{user.username}}, id =
+                        {{user.id}}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </p>
+    <p>
+        <a href="{{ page.get_parent.url }}">Return to
+            {% if page.series.parent_series %}
+                parent series
+                {% else %}
+                Home
+            {% endif %}
+        </a>
+    </p>
+{% endblock %}

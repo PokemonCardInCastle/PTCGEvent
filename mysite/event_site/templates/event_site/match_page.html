@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-regionpage{% endblock %}
+
+{% block content %}
+    <h1>{{ page.title }}</h1>
+
+        <div>n回戦(親ラウンド): {{ page.get_parent.round_count }}</div>
+        <div>マッチ終了の規定勝数: {{ page.max_win_count }}</div>
+        <div>規定試合時間: {{ page.time_limit_in_second }}</div>
+        <div>プレイヤー1: {{ page.player1.title }}</div>
+        <div>プレイヤー2: {{ page.player2.title }}</div>
+
+        <div>終了ダミー: {{ page.is_finished }}</div>
+        <div>マッチ勝者: {{ page.winner }}</div>
+        <div>マッチ敗者: {{ page.loser }}</div>
+        <div>引き分けダミー: {{ page.is_draw }}</div>
+        <div>不戦勝ダミー: {{ page.is_bye }}</div>
+    <div>仮実装</div>
+
+
+    <table>
+    <caption>従属する試合の表</caption>
+    <tr>
+        <th>title(あまり使わない)</th>
+        <th>url</th>
+        <th>先攻プレイヤー</th>
+        <th>勝者</th>
+        <th>敗者</th>
+   </tr>
+        {% for child_page in page.get_children.specific %}
+    <tr>
+        <td>{{ child_page.title }}</td>
+        <td><a href="{{ child_page.url }}">{{ child_page.url }}</a></td>
+        <td>{{ child_page.first_player }}</td>
+        <td>
+        {% if child_page.winner %}
+            {{ child_page.winner }}
+        {% else %}
+            なし
+        {% endif %}
+        </td>
+        <td>
+        {% if child_page.loser %}
+            {{ child_page.loser }}
+        {% else %}
+            なし
+        {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    parent series
+    {% else %}
+    Home
+    {% endif %}</a></p>
+
+{% endblock %}

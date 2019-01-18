@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-regionpage{% endblock %}
+
+{% block content %}
+    <h1>{{ page.title }}</h1>
+
+    <div>n回戦: {{ page.round_count }}</div>
+    <div>仮実装</div>
+
+
+    <table>
+    <caption>従属するマッチの表</caption>
+    <tr>
+        <th>title(あまり使わない)</th>
+        <th>url</th>
+        <th>Player 1</th>
+        <th>Player 2</th>
+   </tr>
+        {% for child_page in page.get_children.specific %}
+    <tr>
+        <td>{{ child_page.title }}</td>
+        <td><a href="{{ child_page.url }}">{{ child_page.url }}</a></td>
+        <td>{{ child_page.player1 }}</td>
+        <td>{{ child_page.player2 }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    parent series
+    {% else %}
+    Home
+    {% endif %}</a></p>
+
+{% endblock %}
