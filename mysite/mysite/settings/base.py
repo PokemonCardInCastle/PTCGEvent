@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     # added
     "widget_tweaks",
     'crispy_forms',
+    "accounts",
 
     'django.contrib.sites',
     # django-allauth

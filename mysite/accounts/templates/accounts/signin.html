@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<form method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{form|crispy}}
+    {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}" />
+    {% endif %}
+    <button type="submit" class="btn btn-primary">Sign In</button>
+</form>
+<p>アカウントをお持ちでない方は、<a href="{% url 'accounts:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">アカウント
+を登録</a>しましょう！</p>
+{% endblock %}
