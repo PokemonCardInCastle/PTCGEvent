@@ -13,7 +13,8 @@ urlpatterns = [
 
     url(r'^admin/', include(wagtailadmin_urls)),
     url(r'^documents/', include(wagtaildocs_urls)),
-
+    # added for django-allauth
+    url(r'^accounts/', include('allauth.urls')),
     url(r'^search/$', search_views.search, name='search'),
 
     # For anything not caught by a more specific rule above, hand over to

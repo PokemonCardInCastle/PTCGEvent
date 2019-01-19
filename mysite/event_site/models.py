@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from django.shortcuts import render
+
 from django.contrib.auth.models import User
 
 from wagtail.core.models import Page
@@ -12,6 +14,8 @@ from wagtail.search import index
 from copy import copy
 import random
 import networkx as nx
+
+
 # Create your models here.
 
 
@@ -306,7 +310,8 @@ class TournamentPage(Page):
             bye_user = User.objects.get_or_create(username="dummy_user", password="dummy_user_pass")[0]
             bye_user.save()
             try:
-                bye_dummy = PlayerPage.objects.get(user=bye_user, parent_tournament=self, is_bye_dummy=True, title="bye_dummy")[0]
+                bye_dummy = \
+                PlayerPage.objects.get(user=bye_user, parent_tournament=self, is_bye_dummy=True, title="bye_dummy")[0]
 
             except PlayerPage.DoesNotExist:
                 bye_dummy = PlayerPage(user=bye_user, parent_tournament=self, is_bye_dummy=True, title="bye_dummy")
@@ -315,8 +320,9 @@ class TournamentPage(Page):
             match_no = self.roundpage_set.all().order_by("-id")[0].matchpage_set.count() + 1
 
             match = MatchPage(parent_round=new_parent_round, max_win_count=match_max_game_count,
-                          time_limit_in_second=time_limit_in_seconds, player1=bye_player, player2=bye_dummy, is_bye=True, title=str(match_no),
-                          )
+                              time_limit_in_second=time_limit_in_seconds, player1=bye_player, player2=bye_dummy,
+                              is_bye=True, title=str(match_no),
+                              )
             new_parent_round.add_child(instance=match)
             match.player1.paired_player.add(match.player2)
             match.player2.paired_player.add(match.player1)
@@ -330,7 +336,8 @@ class TournamentPage(Page):
 
             match_no = self.roundpage_set.all().order_by("-id")[0].matchpage_set.count() + 1
             match = MatchPage(parent_round=new_parent_round, max_win_count=match_max_game_count,
-                              time_limit_in_second=time_limit_in_seconds, player1=player_i, player2=player_j, title=str(match_no),
+                              time_limit_in_second=time_limit_in_seconds, player1=player_i, player2=player_j,
+                              title=str(match_no),
                               )
             new_parent_round.add_child(instance=match)
             match.player1.paired_player.add(match.player2)
@@ -447,11 +454,13 @@ class MatchPage(Page):
     # player1_win_count_in_match = models.IntegerField(default=0)
     # player1_lose_count_in_match = models.IntegerField(default=0)
     # player1_draw_count_in_match = models.IntegerField(default=0)
+    player1_approved = models.BooleanField(default=False)
 
     player2 = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, related_name="player_2")
     # player2_win_count_in_match = models.IntegerField(default=0)
     # player2_lose_count_in_match = models.IntegerField(default=0)
     # player2_draw_count_in_match = models.IntegerField(default=0)
+    player2_approved = models.BooleanField(default=False)
 
     is_finished = models.BooleanField(default=False)
     winner = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, related_name="match_winner", null=True, blank=True)
@@ -474,6 +483,68 @@ class MatchPage(Page):
         FieldPanel("is_draw"),
         FieldPanel("is_bye"),
     ]
+
+    def serve(self, request, *args, **kwargs):
+        from event_site.forms import MatchEditForm
+        context_dict = {
+            "page": self,
+            "form": None,
+            "player1_approve_alert": False,
+            "player2_approve_alert": False,
+            "player1_approve_thank_you": False,
+            "player2_approve_thank_you": False,
+            "message": "デフォルトメッセージ。これが表示されるときは問題があります。"
+        }
+        if request.user.id:
+            current_user = User.objects.get(id=request.user.id)
+        else:
+            current_user = None
+        if current_user == self.player1.user or current_user == self.player2.user:
+            # Approve button and message starts from here.
+            if current_user == self.player1.user:
+                if not self.player1_approved:
+                    context_dict["player1_approve_alert"] = True
+            elif current_user == self.player2.user:
+                if not self.player2_approved:
+                    context_dict["player2_approve_alert"] = True
+
+            # Edit form starts from here.
+            if request.method == "POST":
+                if "player1_approve" in request.POST or "player2_approve" in request.POST:
+                    if "player1_approve" in request.POST:
+                        self.player1_approved = True
+                        self.save()
+                        context_dict["player1_approve_thank_you"] = True
+
+                    elif "player2_approve" in request.POST:
+                        self.player2_approved = True
+                        self.save()
+                        context_dict["player2_approve_thank_you"] = True
+
+                    return render(request, "event_site/match_page.html", context_dict)
+
+                form = MatchEditForm(request.POST, instance=self)
+                if form.is_valid:
+                    form.save()
+                    # 承認確認
+                    if current_user == self.player1:
+                        self.player2_approved = False
+                        self.save()
+                    elif current_user == self.player2:
+                        self.player1_approved = False
+                        self.save()
+
+                    context_dict["form"] = form
+                    context_dict["message"] = "メッセージ： マッチが保存されました！相手プレイヤーにマッチ内容の承認を依頼してください。（プレイヤー1 or プレイヤー2の編集後の画面。）"
+                    return render(request, "event_site/match_page.html", context_dict)
+            else:
+                form = MatchEditForm(instance=self)
+                context_dict["form"] = form
+                context_dict["message"] = "メッセージ： プレイヤー1 or プレイヤー2の編集マッチ画面。"
+                return render(request, "event_site/match_page.html", context_dict)
+        else:
+            context_dict["message"] = "メッセージ： 編集権のない人用メッセージ（テスト用）"
+            return render(request, "event_site/match_page.html", context_dict)
 
     def close_match(self):
         if self.is_bye:
@@ -505,7 +576,8 @@ class MatchPage(Page):
                 len(self.gamepage_set.filter(winner=self.player2)) < self.max_win_count):
 
             # new game only if match is not finished.
-            new_game = GamePage(parent_match=self, first_player=PlayerPage.objects.get(id=first_player_id), title=self.player1.title + ", " + self.player2.title)
+            new_game = GamePage(parent_match=self, first_player=PlayerPage.objects.get(id=first_player_id),
+                                title=self.player1.title + ", " + self.player2.title)
             self.add_child(instance=new_game)
             return new_game
 
@@ -514,7 +586,8 @@ class MatchPage(Page):
             self.save()
             return False
 
-    def register_game_result(self, winner_id=None, loser_id=None, finished_in_time=True, is_draw=False, is_bye=False, is_the_last_game=False):
+    def register_game_result(self, winner_id=None, loser_id=None, finished_in_time=True, is_draw=False, is_bye=False,
+                             is_the_last_game=False):
         """
         :param winner_id: Player.id of the winner of the game.
         :param loser_id: Player.id of the loser of the game.
@@ -567,7 +640,8 @@ class MatchPage(Page):
                     return False
 
             else:
-                if not (game_to_edit.winner == PlayerPage.objects.get(id=winner_id) and game_to_edit.loser == PlayerPage.objects.get(id=loser_id)):
+                if not (game_to_edit.winner == PlayerPage.objects.get(
+                        id=winner_id) and game_to_edit.loser == PlayerPage.objects.get(id=loser_id)):
                     self.close_match()
                     return False
 
@@ -583,7 +657,8 @@ class GamePage(Page):
     parent_match = models.ForeignKey(MatchPage, on_delete=models.PROTECT)
 
     first_player = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, related_name="first_player")
-    winner = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, null=True, blank=True, related_name="winner_player")
+    winner = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, null=True, blank=True,
+                               related_name="winner_player")
     loser = models.ForeignKey(PlayerPage, on_delete=models.PROTECT, null=True, blank=True, related_name="loser_player")
     is_draw = models.BooleanField(default=False)
     is_bye = models.BooleanField(default=False)
@@ -608,6 +683,39 @@ class GamePage(Page):
         FieldPanel("finished_in_time"),
     ]
 
+    def serve(self, request, *args, **kwargs):
+        from event_site.forms import GameEditForm
+        current_user = User.objects.get(id=request.user.id)
+        if current_user == self.parent_match.player1.user or current_user == self.parent_match.player2.user:
+            if request.method == "POST":
 
+                form = GameEditForm(request.POST, instance=self)
+                if form.is_valid:
+                    form.save()
+                    # 承認確認
+                    if current_user == self.parent_match.player1.user:
+                        self.parent_match.player2_approved = False
+                        self.parent_match.save()
+                    elif current_user == self.parent_match.player2.user:
+                        self.parent_match.player1_approved = False
+                        self.parent_match.save()
 
+                    return render(request, "event_site/game_page.html", {
+                        "page": self,
+                        "form": form,
+                        "message": "メッセージ： 保存されました！相手プレイヤーに変更内容の承認を依頼してください。（プレイヤー1 or プレイヤー2の編集後の画面。）"
+                    })
+            else:
+                form = GameEditForm(instance=self)
+                return render(request, "event_site/game_page.html", {
+                    "page": self,
+                    "form": form,
+                    "message": "メッセージ： プレイヤー1 or プレイヤー2の編集可能（編集直後以外）画面。"
+                })
 
+        else:
+            return render(request, "event_site/game_page.html", {
+                "page": self,
+                "form": None,
+                "message": "メッセージ： 編集県内人用メッセージ（テスト用）。"
+            })

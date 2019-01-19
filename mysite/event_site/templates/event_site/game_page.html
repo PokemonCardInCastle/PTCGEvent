@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-regionpage{% endblock %}
+
+{% block content %}
+
+
+    <h1>{{ page.title }}</h1>
+
+        <div>先攻プレイヤー: {{ page.parent_player }}</div>
+        <div>勝者: {{ page.winner }}</div>
+        <div>敗者: {{ page.loser }}</div>
+        <div>引き分け: {{ page.is_draw }}</div>
+        <div>不戦勝: {{ page.is_bye }}</div>
+
+        <div>開始時刻: {{ page.started_at }}</div>
+        <div>終了時刻: {{ page.finished_at }}</div>
+        <div>時間内に終了した？: {{ page.finished_in_time }}</div>
+        <div>最終戦？: {{ page.is_the_last_game }}</div>
+    <div>仮実装</div>
+
+    {% if form %}
+        <form action="." method="POST">
+            {% csrf_token %}
+            {{ message }}
+            {{ form.as_p }}
+        </form>
+    {% endif %}
+
+
+
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    parent series
+    {% else %}
+    Home
+    {% endif %}</a></p>
+
+{% endblock %}

@@ -21,6 +21,16 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 
+AUTHENTICATION_BACKENDS = (
+
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +53,14 @@ INSTALLED_APPS = [
 
     # added
     "widget_tweaks",
+    'crispy_forms',
+
+    'django.contrib.sites',
+    # django-allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.twitter',
     # end added
 
     'modelcluster',
@@ -55,6 +73,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+# SITE_ID added for django-allauth
+SITE_ID = 1
+
+# bootstrap4 setting
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
