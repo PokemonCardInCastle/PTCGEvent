@@ -2,6 +2,7 @@
 
 {% load wagtailcore_tags %}
 
+{% load crispy_forms_tags %}
 {% block body_class %}template-blogpage{% endblock %}
 
 {% block content %}
@@ -10,8 +11,28 @@
 
     <div class="intro">{{ page.intro }}</div>
     {{ page.body|richtext }}
-
+    {% if message %}
+        <div class="alert alert-success card card-body">
+            {{ message }}
+        </div>
+    {% endif %}
     <p>
+    {% if user.is_authenticated %}
+        {% if page.owner == user or page.parent_series == None %}
+            <form action="." method="POST">
+                {% csrf_token %}
+                {{ series_form|crispy }}
+                <button class="btn btn-primary" type="submit" name="create_series" value="">大会シリーズを作成する</button>
+            </form>
+        {% endif %}
+        {% if page.owner == user %}
+            <form action="." method="POST">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit" name="create_tournament" value="">大会シリーズを作成する</button>
+            </form>
+        {% endif %}
+    {% endif %}
+
     <div>
     シリーズ情報
 </div>
@@ -20,6 +41,9 @@
             親シリーズ: {{ page.parent_series }}
         </div>
     {% endif %}
+
+
+
     name: {{ page.title }}
 
     <div>Owner:

@@ -9,34 +9,125 @@
     body :
     {{ page.body|richtext }}<br/>
 
-    {% if user == page.owner or user in page.admin_user %}
-        {% if page.can_start_next_round %}
-            マッチング可能：
-            <button class="btn btn-primary">マッチングボタン(未実装)</button>
-        {% else %}
-            マッチング不可：
-            <button class="btn btn-secondary disabled">マッチングボタン(未実装)</button>
-        {% endif %}
+    {% if message %}
+        <div class="alert alert-success card card-body">
+            {{ message }}
+        </div>
+    {% endif %}
 
-        <p>
+    {% if user in page.get_admin_users %}
+        {% if not page.is_started %}
+            <div class="alert alert-primary">
+                <div>主催者用トーナメント開始ボタン</div>
+                <div>現在の参加登録人数: {{ page.get_all_players.count }}名</div>
+                <div>現在の出席登録人数: {{ page.get_present_players.count }}名</div>
+                {% if not page.is_accepting_attendance_check %}
+                    {% if page.get_present_players.count == page.get_all_players.count %}
+                        <button class="btn btn-secondary disabled" type="submit" name="start_attendance_check" value="">出席登録を受け付ける</button>
+                    {% else %}
+                        <form action="." method="POST">
+                            {% csrf_token %}
+                            <button class="btn btn-primary" type="submit" name="start_attendance_check" value="">出席登録を受け付ける</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <form action="." method="POST">
+                        {% csrf_token %}
+                        <button class="btn btn-warning" type="submit" name="stop_attendance_check" value="">出席登録を停止する</button>
+                    </form>
+                {% endif %}
+                {% if 0 < page.get_present_players.count %}
+                <form action="." method="POST">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit" name="start_tournament" value="">大会を開始する</button>
+                </form>
+                {% else %}
+                    <button class="btn btn-secondary disabled" type="submit" name="go_next_round" value="">大会を開始する</button>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if page.is_started %}
+        {% if user_is_admin %}
+            <div class="alert alert-primary">
+            <div>主催者用マッチングボタン</div>
+            {% if page.can_start_next_round %}
+            <form action="." method="POST">
+                {% csrf_token %}
+                マッチング可能：
+
+                <button class="btn btn-primary" type="submit" name="go_next_round" value="">マッチングボタン</button>
+            </form>
+            {% else %}
+                マッチング不可：
+                <button class="btn btn-secondary disabled">マッチングボタン</button>
+            {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if not page.is_started %}
+        {% if user.is_authenticated %}
+            {% if page.join_availability_check %}
+                {% if not user in page.user_queryset %}
+                    <form action="." method="POST">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" type="submit" name="join_tournament" value="">参加申請する</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            ログインorユーザ登録して、大会に参加しましょう！
+        {% endif %}
+    {% endif %}
+    {% if page.is_accepting_attendance_check %}
         {% if user in page.user_queryset %}
+            {% if player %}
+                {% if player not in page.get_present_players %}
+                    <div class="alert alert-primary">
+                        <form action="." method="POST">
+                            {% csrf_token %}
+                            出席登録可能：
+
+                            <button class="btn btn-primary" type="submit" name="attendance_check" value="">出席登録ボタン</button>
+                        </form>
+                    </div>
+               {% endif %}
+            {% endif %}
+        {% else %}
+            参加者じゃないぴよ...（ここは参加者用マッチ情報表示欄です。）
+        {% endif %}
+    {% endif %}
+        <div class="card card-body">
+    {% if user in page.user_queryset %}
         参加者用マッチ情報<br>
-            {% if page.round %}
-                {% for round in page.round_set %}
-                    {% for match in round.match_set %}
+            {% if page.get_children_rounds %}
+                {% for round in page.get_children_rounds %}
+                    <p>
+                    {{ forloop.counter }}回戦
+                    {% for match in round.get_children_matches %}
                         {% if match.player1.user == user or user == match.player2.user %}
-                            match.url
+                            <a href="{{ match.url }}">
+                            {% if match.player1.user == user %}
+                                vs {{ match.player2.user.username }}
+                            {% else %}
+                                vs {{ match.player1.user.username }}
+                            {% endif %}
+</a>
+
                         {% endif %}
                     {% endfor %}
+                    </p>
                 {% endfor %}
             {% else %}
                 まだマッチングされてないよ。マッチングされたらここに表示されます。
             {% endif %}
         {% else %}
-        参加者じゃないぴよ...（ここは参加者用マッチ情報表示欄です）
+        参加者じゃないぴよ...（ここは参加者用マッチ情報表示欄です。）
         {% endif %}
-</p>
-    {% endif %}
+        </div>
+
     <table>
         <tr>
             <td>start_datetime</td>

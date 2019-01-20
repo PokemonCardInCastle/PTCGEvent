@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load wagtailcore_tags %}
+{% load crispy_forms_tags %}
 
 {% block body_class %}template-regionpage{% endblock %}
 
@@ -8,7 +9,11 @@
 
 
     <h1>{{ page.title }}</h1>
-
+    {% if message %}
+        <div class="alert alert-success card card-body">
+            {{ message }}
+        </div>
+    {% endif %}
         <div>先攻プレイヤー: {{ page.parent_player }}</div>
         <div>勝者: {{ page.winner }}</div>
         <div>敗者: {{ page.loser }}</div>
@@ -22,11 +27,21 @@
     <div>仮実装</div>
 
     {% if form %}
-        <form action="." method="POST">
+    <p>
+  <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#game_edit_form" aria-expanded="false" aria-controls="game_edit_form">
+    試合の編集をする
+  </button>
+</p>
+<div class="collapse" id="game_edit_form">
+  <div class="card card-body">
+    <form action="." method="POST">
             {% csrf_token %}
-            {{ message }}
-            {{ form.as_p }}
+            {{ form|crispy }}
+            <p><input type="submit" value="上書き保存" class="btn btn-primary"></p>
         </form>
+  </div>
+</div>
+
     {% endif %}
 
 

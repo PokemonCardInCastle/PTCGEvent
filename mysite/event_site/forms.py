@@ -1,7 +1,19 @@
 from django import forms
-from event_site.models import TournamentPage, RoundPage, MatchPage, GamePage, PlayerPage, User
-
+from event_site.models import SeriesPage, TournamentPage, RoundPage, MatchPage, GamePage, PlayerPage, User
+from django.utils.translation import gettext as _
 from django.views.generic.edit import UpdateView
+
+
+class SeriesEditForm(forms.ModelForm):
+    class Meta:
+        model = SeriesPage
+        fields = ["title", "intro", "body"]
+
+
+class MySeriesEditForm(forms.ModelForm):
+    class Meta:
+        model = SeriesPage
+        fields = ["intro", "body", "parent_series"]
 
 
 class TournamentAdminEditForm(forms.ModelForm):
@@ -36,10 +48,63 @@ class MatchEditForm(forms.ModelForm):
         exclude = []
 
 
+class NewGameForm(forms.ModelForm):
+    first_player = forms.ModelChoiceField(queryset=PlayerPage.objects.none())
+
+    def __init__(self, parent_instance, *args, **kwargs):
+        super(NewGameForm, self).__init__(*args, **kwargs)
+        parent_match_ins = parent_instance
+        player_ids = [parent_match_ins.player1.id, parent_match_ins.player2.id]
+        qs = PlayerPage.objects.filter(id__in=player_ids)
+
+        self.fields["first_player"].queryset = qs
+
+    class Meta:
+        model= GamePage
+        fields = ["first_player"]
+
+
 class GameEditForm(forms.ModelForm):
+    winner = forms.ModelChoiceField(queryset=PlayerPage.objects.none())
+    loser = forms.ModelChoiceField(queryset=PlayerPage.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super(GameEditForm, self).__init__(*args, **kwargs)
+        ins = kwargs.get("instance")
+        player_ids = [ins.parent_match.player1.id, ins.parent_match.player2.id]
+        qs = PlayerPage.objects.filter(id__in=player_ids)
+
+        self.fields["winner"].queryset = qs
+        self.fields["loser"].queryset = qs
+
     class Meta:
         model = GamePage
+        fields = ["first_player", "winner", "loser", "is_draw", "finished_in_time", "started_at", "is_the_last_game", "finished_at"]
         exclude = []
+    #
+    # def clean_is_draw(self):
+    #     if self.cleaned_data["is_draw"]:
+    #         raise forms.ValidationError("is_draw cannot be set true")
 
+    def clean(self):
 
+        cleaned_data = super().clean()
+        if cleaned_data.get("winner") and cleaned_data.get("loser"):
+            if cleaned_data.get("winner") == cleaned_data.get("loser"):
+                msg = _("winnerとloserを同一プレイヤーに設定することはできません。")
+                self.add_error("winner", msg)
+                self.add_error("loser", msg)
+
+        if cleaned_data.get("is_draw"):
+            if cleaned_data.get("winner") or cleaned_data.get("loser"):
+                msg = _("is_drawと、winnerまたはloserを同時に設定することはできません。")
+                self.add_error("winner", msg)
+                self.add_error("loser", msg)
+                self.add_error("is_draw", msg)
+
+            if cleaned_data.get("is_bye"):
+                msg = _("is_drawとis_byeを同時に設定することはできません")
+                self.add_error("is_bye", msg)
+                self.add_error("is_draw", msg)
+        return cleaned_data
 

@@ -20,12 +20,12 @@ class SeriesPageTestCase(TestCase):
 
         series_1 = SeriesPage(title="series_1", parent_series=None, intro="intro of series 1.")
         home.add_child(instance=series_1)
-        series_1.admin_user.add(user_1)
+        series_1.admin_users.add(user_1)
 
         series_2 = SeriesPage(title="series_2", parent_series=SeriesPage.objects.filter(title="series_1")[0], intro="intro of series 2.")
         series_1.add_child(instance=series_2)
         self.series_2 = series_2
-        series_2.admin_user.add(user_1)
+        series_2.admin_users.add(user_1)
 
     def test_parent_series(self):
         parent = SeriesPage.objects.get(title="series_1")
@@ -55,16 +55,16 @@ class TournamentTestCase(TestCase):
 
         self.series_1 = SeriesPage(title="series_1", parent_series=None, intro="series_1")
         home.add_child(instance=self.series_1)
-        self.series_1.admin_user.add(self.user_1)
+        self.series_1.admin_users.add(self.user_1)
 
         self.series_2 = SeriesPage(title="series_2", parent_series=SeriesPage.objects.filter(title="series_1")[0], intro="series_2 intro")
         self.series_1.add_child(instance=self.series_2)
-        self.series_2.admin_user.add(self.user_1)
+        self.series_2.admin_users.add(self.user_1)
 
         self.tournament = TournamentPage(title="Tournament_1", intro="ti intro", parent_series=self.series_2, max_player_count=3, top_cut_count=1, default_time_limit_in_sec=1000, max_round=2)
         self.series_2.add_child(instance=self.tournament)
 
-        self.tournament_for_5 = TournamentPage(title="Tournament_1_5", intro="t1-5 intr", parent_series=self.series_2, max_player_count=5,
+        self.tournament_for_5 = TournamentPage(title="Tournament_1_5", intro="t1-5 intro", parent_series=self.series_2, max_player_count=5,
                                                top_cut_count=1, default_time_limit_in_sec=1000, max_round=3, bye_win_count_in_match=2, max_win_count_in_match=2)
         self.series_2.add_child(instance=self.tournament_for_5)
 

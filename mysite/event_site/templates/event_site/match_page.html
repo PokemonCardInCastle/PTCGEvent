@@ -7,7 +7,11 @@
 
 {% block content %}
 
-    <p>{{ message }}</p>
+    {% if message %}
+        <div class="alert alert-success card card-body">
+            {{ message }}
+        </div>
+    {% endif %}
     {% if player1_approve_alert or player2_approve_alert %}
         <div class="alert alert-warning">
             <p>
@@ -30,6 +34,16 @@
                 結果の承認が登録されました！ご協力ありがとうございます。
             </p>
         </div>
+    {% endif %}
+
+{% if new_game_form %}
+
+        <form action="" method="POST">
+            {% csrf_token %}
+                {{new_game_form|crispy }}
+                <button type="submit" name="game_start" class="btn btn-success" value="game_start">試合を開始する</button>
+</form>
+
     {% endif %}
 
 
@@ -55,9 +69,11 @@
         <div>マッチ終了の規定勝数: {{ page.max_win_count }}</div>
         <div>規定試合時間: {{ page.time_limit_in_second }}</div>
         <div>プレイヤー1: {{ page.player1.title }}</div>
+        <div>プレイヤー1結果承認: {{ page.player1_approved }}</div>
         <div>プレイヤー2: {{ page.player2.title }}</div>
+        <div>プレイヤー2結果承認: {{ page.player2_approved }}</div>
 
-        <div>終了: {{ page.is_finished }}</div>
+        <div>マッチ全試合終了済み: {{ page.is_finished }}</div>
         <div>マッチ勝者: {{ page.winner }}</div>
         <div>マッチ敗者: {{ page.loser }}</div>
         <div>引き分け: {{ page.is_draw }}</div>
@@ -73,6 +89,7 @@
         <th>先攻プレイヤー</th>
         <th>勝者</th>
         <th>敗者</th>
+        <th>進行中</th>
    </tr>
 
 
@@ -93,6 +110,13 @@
             {{ child_page.loser }}
         {% else %}
             なし
+        {% endif %}
+        </td>
+        <td>
+        {% if child_page.finished_at %}
+
+        {% else %}
+            進行中
         {% endif %}
         </td>
     </tr>
