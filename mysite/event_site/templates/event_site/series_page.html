@@ -13,23 +13,28 @@
     {{ page.body|richtext }}
     {% if message %}
         <div class="alert alert-success card card-body">
-            {{ message }}
+            {{ message|safe }}
         </div>
     {% endif %}
     <p>
     {% if user.is_authenticated %}
         {% if page.owner == user or page.parent_series == None %}
-            <form action="." method="POST">
-                {% csrf_token %}
-                {{ series_form|crispy }}
-                <button class="btn btn-primary" type="submit" name="create_series" value="">大会シリーズを作成する</button>
-            </form>
+            <div class="card card-body">
+                <form action="." method="POST">
+                    {% csrf_token %}
+                    {{ series_form|crispy }}
+                    <button class="btn btn-primary m-2" type="submit" name="create_series" value="">大会シリーズを作成する</button>
+                </form>
+            </div>
         {% endif %}
         {% if page.owner == user %}
-            <form action="." method="POST">
-                {% csrf_token %}
-                <button class="btn btn-primary" type="submit" name="create_tournament" value="">大会シリーズを作成する</button>
-            </form>
+            <div class="card card-body">
+                <form action="." method="POST">
+                    {% csrf_token %}
+                    {{ tournament_form|crispy }}
+                    <button class="btn btn-primary m-2" type="submit" name="create_tournament" value="">トーナメントを作成する</button>
+                </form>
+            </div>
         {% endif %}
     {% endif %}
 
@@ -46,18 +51,19 @@
 
     name: {{ page.title }}
 
-    <div>Owner:
-        <div>username = {{page.owner.username}}, id = {{page.owner.id}}</div>
-    {% for user in page.admin_user.all %}
-        {% if user != page.owner %}
-            <div>username = {{user.username}}, id = {{user.id}}</div>
-            {% endif %}
-    {% endfor %}
+    <div>Owner: username = {{page.owner.username}}, id = {{page.owner.id}}
      </div>
-
+    {% if page.seriespage_set.all %}
+        <table class="card card-body">
+        <caption>子シリーズ</caption>
+        {% for series_page_obj in page.seriespage_set.all %}
+            <tr><td><a href="{{series_page_obj.url}}"> {{series_page_obj.title}}</a></td></tr>
+            {% endfor %}
+</table>
+    {% endif %}
 </p>
 
-    <p><a href="{{ page.get_parent.url }}">Return to {% if page.series.parent_series %}
+    <p><a href="{{ page.get_parent.url }}">Return to {% if page.parent_series %}
     parent series
     {% else %}
     Home

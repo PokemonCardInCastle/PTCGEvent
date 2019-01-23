@@ -16,6 +16,7 @@ from copy import copy
 import random
 import networkx as nx
 
+from datetime import datetime
 
 # Create your models here.
 
@@ -171,10 +172,11 @@ class SeriesPage(Page):
     ]
 
     def serve(self, request, *args, **kwargs):
-        from event_site.forms import SeriesEditForm
+        from event_site.forms import SeriesEditForm, TournamentEditForm
         context_dict = {
             "page": self,
             "series_form": None,
+            "tournament_form": None,
             "message": "",
         }
 
@@ -194,20 +196,50 @@ class SeriesPage(Page):
                     form = SeriesEditForm(request.POST)
                     if form.is_valid():
                         new_series = self.create_series(request.POST["title"], current_user, request.POST["intro"], request.POST["body"],)
-                        context_dict["message"] = new_series.url + "シリーズを作成しました。"
+                        context_dict["message"] = "<a href =\"" + new_series.url + "\">" + new_series.title + "</a>シリーズを作成しました。"
+                        return render(request, "event_site/series_page.html", context_dict)
+
+            if "create_tournament" in request.POST:
+                if self.owner == current_user:
+                    form = SeriesEditForm(request.POST)
+                    if form.is_valid():
+                        title = request.POST["title"]
+                        owner = current_user
+                        intro = request.POST["intro"]
+                        body = request.POST["body"]
+                        start_datetime = request.POST["start_datetime"]
+                        max_player_count = int(request.POST["max_player_count"])
+                        top_cut_count = int(request.POST["top_cut_count"])
+                        default_time_limit_in_sec = int(request.POST["default_time_limit_in_sec"])
+                        max_win_count_in_match = int(request.POST["max_win_count_in_match"])
+                        bye_win_count_in_match = int(request.POST["bye_win_count_in_match"])
+
+                        max_round = int(request.POST["max_round"])
+
+                        new_tournament = self.create_tournament(title=title, owner=owner, intro=intro, body=body,
+                                                                start_datetime=start_datetime, max_player_count=max_player_count,
+                                                                top_cut_count=top_cut_count, default_time_limit_in_sec=default_time_limit_in_sec,
+                                                                max_round=max_round, max_win_count_in_match=max_win_count_in_match,
+                                                                bye_win_count_in_match=bye_win_count_in_match)
+                        context_dict["message"] = "<a href =\"" + new_tournament.url + "\">" + new_tournament.title + "</a>トーナメントを作成しました。"
                         return render(request, "event_site/series_page.html", context_dict)
 
         else:
             context_dict["series_form"] = SeriesEditForm()
+            context_dict["tournament_form"] = TournamentEditForm()
             return render(request, "event_site/series_page.html", context_dict)
 
-
-    def create_series(self, title:str, owner: User, intro:str, body:str, **kwargs):
+    def create_series(self, title: str, owner: User, intro: str, body: str):
         new_series = SeriesPage(title=title, owner=owner, intro=intro, body=body, parent_series=self)
         self.add_child(instance=new_series)
 
         return new_series
 
+    def create_tournament(self, title: str, owner: User, intro: str, body: str, start_datetime: datetime, max_player_count: int, top_cut_count: int, default_time_limit_in_sec: int, max_round: int, max_win_count_in_match: int, bye_win_count_in_match: int):
+        new_tournament = TournamentPage(title=title, owner=owner, intro=intro, body=body, parent_series=self)
+        self.add_child(instance=new_tournament)
+
+        return new_tournament
 
     def get_admin_users(self):
         tournament_admins = self.admin_users.all()

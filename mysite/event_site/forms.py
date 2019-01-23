@@ -10,10 +10,10 @@ class SeriesEditForm(forms.ModelForm):
         fields = ["title", "intro", "body"]
 
 
-class MySeriesEditForm(forms.ModelForm):
+class TournamentEditForm(forms.ModelForm):
     class Meta:
-        model = SeriesPage
-        fields = ["intro", "body", "parent_series"]
+        model = TournamentPage
+        fields = ["title", "intro", "body", "start_datetime", "max_player_count", "top_cut_count", "default_time_limit_in_sec", "max_round", "max_win_count_in_match", "bye_win_count_in_match"]
 
 
 class TournamentAdminEditForm(forms.ModelForm):
