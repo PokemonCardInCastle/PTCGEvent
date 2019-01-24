@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     'crispy_forms',
     "accounts",
+    "tempus_dominus",
 
     'django.contrib.sites',
     # django-allauth
@@ -140,7 +141,7 @@ if os.getenv('GAE_APPLICATION', None):
             'HOST': '/cloudsql/pokecamemo-tournament:asia-northeast1:pokecamemo-tournament',
             'USER': 'memo-owner',
             'PASSWORD': '',
-            'NAME': 'pokecamemo-tournament',
+            'NAME': 'main',
         }
     }
 else:
@@ -155,7 +156,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '127.0.0.1',
             'PORT': '3306',
-            'NAME': 'pokecamemo-tournament',
+            'NAME': 'main',
             'USER': 'memo-owner',
             'PASSWORD': '',
         }

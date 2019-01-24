@@ -1,6 +1,8 @@
 from django import forms
 from event_site.models import SeriesPage, TournamentPage, RoundPage, MatchPage, GamePage, PlayerPage, User
 from django.utils.translation import gettext as _
+
+from tempus_dominus.widgets import DatePicker, TimePicker, DateTimePicker
 from django.views.generic.edit import UpdateView
 
 
@@ -11,6 +13,21 @@ class SeriesEditForm(forms.ModelForm):
 
 
 class TournamentEditForm(forms.ModelForm):
+    start_datetime = forms.DateTimeField(
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=DateTimePicker(
+            options={
+                'useCurrent': True,
+                'collapse': True,
+            },
+            attrs={
+                'append': 'fa fa-calendar',
+                'input_toggle': True,
+                'icon_toggle': False,
+            },
+        )
+    )
+
     class Meta:
         model = TournamentPage
         fields = ["title", "intro", "body", "start_datetime", "max_player_count", "top_cut_count", "default_time_limit_in_sec", "max_round", "max_win_count_in_match", "bye_win_count_in_match"]
@@ -67,6 +84,20 @@ class NewGameForm(forms.ModelForm):
 class GameEditForm(forms.ModelForm):
     winner = forms.ModelChoiceField(queryset=PlayerPage.objects.none())
     loser = forms.ModelChoiceField(queryset=PlayerPage.objects.none())
+    finished_at = forms.DateTimeField(
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=DateTimePicker(
+            options={
+                'useCurrent': True,
+                'collapse': True,
+            },
+            attrs={
+                'append': 'fa fa-calendar',
+                'input_toggle': True,
+                'icon_toggle': False,
+            },
+        )
+    )
 
     def __init__(self, *args, **kwargs):
         super(GameEditForm, self).__init__(*args, **kwargs)

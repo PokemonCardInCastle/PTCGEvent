@@ -21,10 +21,6 @@ signin_view = SigninView.as_view()
 class SignupView(views.SignupView):
     template_name = 'accounts/signup.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(SignupView, self).get_context_data
-        return context
-
 
 signup_view = SignupView.as_view()
 

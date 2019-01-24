@@ -21,14 +21,20 @@
         {# Global stylesheets #}
         <link rel="stylesheet" type="text/css" href="{% static 'css/mysite.css' %}">
 
-        {% block extra_css %}
-            {# Override this in templates to add extra stylesheets #}
+        {% block global_extra_css %}
+            {# font awesome #}
+            <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
             {# Bootstrap #}
             <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
             {# Theme CSS #}
             <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
             {# Tempus Dominus #}
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+            {{ form.media }}
+        {% endblock %}
+
+        {% block extra_css %}
+            {# Override this in templates to add extra stylesheets #}
         {% endblock %}
     </head>
 
