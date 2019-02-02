@@ -10,6 +10,7 @@ django-crispy-forms==1.7.2
 django-extensions==2.1.4
 django-modelcluster==4.3
 django-taggit==0.23.0
+django-tempus-dominus==5.1.2.1
 django-treebeard==4.3
 django-widget-tweaks==1.4.3
 djangorestframework==3.9.0

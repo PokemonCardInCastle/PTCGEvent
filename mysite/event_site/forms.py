@@ -7,12 +7,14 @@ from django.views.generic.edit import UpdateView
 
 
 class SeriesEditForm(forms.ModelForm):
+    body = forms.Textarea()
     class Meta:
         model = SeriesPage
         fields = ["title", "intro", "body"]
 
 
 class TournamentEditForm(forms.ModelForm):
+    body = forms.Textarea()
     start_datetime = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M'],
         widget=DateTimePicker(

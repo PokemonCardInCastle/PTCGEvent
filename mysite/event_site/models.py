@@ -236,7 +236,7 @@ class SeriesPage(Page):
         return new_series
 
     def create_tournament(self, title: str, owner: User, intro: str, body: str, start_datetime: datetime, max_player_count: int, top_cut_count: int, default_time_limit_in_sec: int, max_round: int, max_win_count_in_match: int, bye_win_count_in_match: int):
-        new_tournament = TournamentPage(title=title, owner=owner, intro=intro, body=body, parent_series=self)
+        new_tournament = TournamentPage(title=title, owner=owner, intro=intro, body=body, parent_series=self, start_datetime=start_datetime,max_player_count=max_player_count, top_cut_count=top_cut_count, default_time_limit_in_sec=default_time_limit_in_sec, max_round=max_round, max_win_count_in_match=max_win_count_in_match, bye_win_count_in_match=bye_win_count_in_match)
         self.add_child(instance=new_tournament)
 
         return new_tournament
